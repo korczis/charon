@@ -1,0 +1,18 @@
+language: rust
+
+cache: cargo
+
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y llibpcap-dev upx-ucl graphviz
+
+rust:
+  - stable
+  - beta
+  - nightly
+
+matrix:
+  allow_failures:
+    - rust: nightly
+
+script: make install_deps; make all
