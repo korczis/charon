@@ -1,5 +1,9 @@
 language: rust
 
+os:
+  - linux
+  - osx
+  
 cache: cargo
 
 before_install:
