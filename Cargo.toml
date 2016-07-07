@@ -9,6 +9,7 @@ license = "MIT"
 repository = "https://github.com/korczis/charon"
 
 [dependencies]
+byteorder = "*"
 chomp = "0.2.5"
 chrono = "0.2"
 clap = "*"
@@ -19,6 +20,7 @@ libc = { version = "0.2", default-features = false }
 log = "0.3"
 lru-cache = "0.0.7"
 pcap = { git = "https://github.com/korczis/pcap.git" }
+pnet = "0.10.0"
 rand = "0.3.0"
 regex = "0.1"
 tempfile = "2.1.4"
