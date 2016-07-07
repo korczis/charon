@@ -3,12 +3,19 @@ language: rust
 os:
   - linux
   - osx
-  
+
 cache: cargo
 
-before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get install -y libpcap-dev upx-ucl graphviz
+addons:
+  apt:
+    packages:
+      - libpcap-dev
+      - upx-ucl
+      - graphviz
+
+before install:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update          ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install upx graphviz; fi
 
 rust:
   - stable
