@@ -65,10 +65,15 @@ fn main() {
 
     if matches.is_present("list") {
         charon::list_devices();
+        return;
     }
 
     let snaplen = matches.value_of("snaplen").map(|value| value.to_string());
 
-    charon::sniff(matches.is_present("promisc"),
-                  snaplen.unwrap().parse::<i32>().unwrap());
+    let promisc = matches.is_present("promisc");
+    if promisc {
+        println!("Capturing packets in promiscuous mode");
+    }
+
+    charon::sniff(promisc, snaplen.unwrap().parse::<i32>().unwrap());
 }
