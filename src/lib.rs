@@ -2,11 +2,15 @@
 extern crate log;
 extern crate env_logger;
 extern crate pcap;
+extern crate pnet;
 
 use std::io::Write;
 use std::io::stdout;
-// use std::thread;
-// use std::sync::mpsc;
+
+use pnet::packet::ethernet::{EthernetPacket, EtherTypes};
+use pnet::packet::ipv4::Ipv4Packet;
+use pnet::packet::ipv6::Ipv6Packet;
+use pnet::packet::Packet;
 
 pub fn list_devices() {
     for device in pcap::Device::list().unwrap() {
@@ -14,57 +18,38 @@ pub fn list_devices() {
     }
 }
 
+pub fn process_ipv4(ethernet: &EthernetPacket) {
+    if let Some(ip) = Ipv4Packet::new(ethernet.payload()) {
+        println!("{:?} -> {:?}", ip.get_source(), ip.get_destination());
+    }
+}
+
+pub fn process_ipv6(ethernet: &EthernetPacket) {
+    if let Some(ip) = Ipv6Packet::new(ethernet.payload()) {
+        println!("{:?} -> {:?}", ip.get_source(), ip.get_destination());
+    }
+}
+
 pub fn process(packet: &pcap::Packet) {
     info!("{:?}", packet);
 
-    print!("{:x}:{:x}:{:x}:{:x}:{:x}:{:x}",
-           packet.data[0],
-           packet.data[1],
-           packet.data[2],
-           packet.data[3],
-           packet.data[4],
-           packet.data[5]);
+    if let Some(ethernet) = EthernetPacket::new(packet.data) {
+        println!("{:?} -> {:?}",
+                 ethernet.get_source(),
+                 ethernet.get_destination());
 
-    print!(" -> ");
-
-    println!("{:x}:{:x}:{:x}:{:x}:{:x}:{:x}",
-             packet.data[6],
-             packet.data[7],
-             packet.data[8],
-             packet.data[9],
-             packet.data[10],
-             packet.data[11]);
-
-    print!("{}.{}.{}.{}",
-           packet.data[30],
-           packet.data[31],
-           packet.data[32],
-           packet.data[33]);
-
-    print!(" -> ");
-
-    println!("{}.{}.{}.{}",
-             packet.data[34],
-             packet.data[35],
-             packet.data[36],
-             packet.data[37]);
-
-    // println!("{:?}", packet.header);
+        match ethernet.get_ethertype() {
+            EtherTypes::Ipv4 => process_ipv4(&ethernet),
+            EtherTypes::Ipv6 => process_ipv6(&ethernet),
+            _ => {}
+        }
+    }
 
     // And finally flush output
     stdout().flush().unwrap();
 }
 
 pub fn sniff(promisc: bool, snaplen: i32) {
-    // let (tx, rx) = mpsc::channel::<pcap::Packet>();
-    //
-    // thread::spawn(move || {
-    //     loop {
-    //         let packet = rx.recv().unwrap();
-    //         process(packet);
-    //     }
-    // });
-
     let main_device = pcap::Device::lookup().unwrap();
     let mut cap = pcap::Capture::from_device(main_device)
         .unwrap()
