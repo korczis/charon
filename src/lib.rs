@@ -11,9 +11,11 @@ use std::io::stdout;
 // use std::sync::mpsc;
 // use std::thread;
 
+use std::str;
+
 use pnet::packet::ethernet::{EthernetPacket, EtherTypes};
 use pnet::packet::arp::ArpPacket;
-use pnet::packet::ip::{IpNextHeaderProtocol, IpNextHeaderProtocols};
+use pnet::packet::ip::IpNextHeaderProtocols;
 use pnet::packet::ipv4::Ipv4Packet;
 use pnet::packet::ipv6::Ipv6Packet;
 use pnet::packet::icmp::IcmpPacket;
@@ -27,61 +29,92 @@ pub fn list_devices() {
     }
 }
 
+pub fn process_payload(payload: &[u8]) {
+    info!("PAYLOAD: {:?}", payload);
+
+    match str::from_utf8(payload) {
+        Ok(text) => info!("PAYLOAD (DECODED) {:?}", text),
+        _ => {}
+    };
+}
+
 pub fn process_arp(ethernet: &EthernetPacket) {
-    if let Some(arp) = ArpPacket::new(ethernet.payload()) {
-        info!("{:?}", arp);
+    match ArpPacket::new(ethernet.payload()) {
+        Some(arp) => info!("{:?}", arp),
+        _ => {}
     }
 }
 
 pub fn process_ipv4(ethernet: &EthernetPacket) {
-    if let Some(ip) = Ipv4Packet::new(ethernet.payload()) {
-        info!("{:?}", ip);
+    match Ipv4Packet::new(ethernet.payload()) {
+        Some(ip) => {
+            info!("{:?}", ip);
 
-        match ip.get_next_level_protocol() {
-            IpNextHeaderProtocols::Icmp => process_icmp(&ip),
-            IpNextHeaderProtocols::Tcp => process_tcp(&ip),
-            IpNextHeaderProtocols::Udp => process_udp(&ip),
-            _ => {}
+            match ip.get_next_level_protocol() {
+                IpNextHeaderProtocols::Icmp => process_icmp(&ip),
+                IpNextHeaderProtocols::Tcp => process_tcp(&ip),
+                IpNextHeaderProtocols::Udp => process_udp(&ip),
+                _ => {}
+            }
         }
+        _ => {}
     }
 }
 
 pub fn process_ipv6(ethernet: &EthernetPacket) {
-    if let Some(ip) = Ipv6Packet::new(ethernet.payload()) {
-        info!("{:?}", ip);
+    match Ipv6Packet::new(ethernet.payload()) {
+        Some(ip) => {
+            info!("{:?}", ip);
+        }
+        _ => {}
     }
 }
 
 pub fn process_icmp(ip: &Ipv4Packet) {
-    if let Some(icmp) = IcmpPacket::new(ip.payload()) {
-        info!("{:?}", icmp);
+    match IcmpPacket::new(ip.payload()) {
+        Some(icmp) => {
+            info!("{:?}", icmp);
+            process_payload(&icmp.payload());
+        }
+        _ => {}
     }
 }
 
 pub fn process_tcp(ip: &Ipv4Packet) {
-    if let Some(tcp) = TcpPacket::new(ip.payload()) {
-        info!("{:?}", tcp);
+    match TcpPacket::new(ip.payload()) {
+        Some(tcp) => {
+            info!("{:?}", tcp);
+            process_payload(&tcp.payload());
+        }
+        _ => {}
     }
 }
 
 pub fn process_udp(ip: &Ipv4Packet) {
-    if let Some(udp) = UdpPacket::new(ip.payload()) {
-        info!("{:?}", udp);
+    match UdpPacket::new(ip.payload()) {
+        Some(udp) => {
+            info!("{:?}", udp);
+            process_payload(&udp.payload());
+        }
+        _ => {}
     }
 }
 
 pub fn process(packet: &pcap::Packet) {
     info!("{:?}", packet);
 
-    if let Some(ethernet) = EthernetPacket::new(packet.data) {
-        info!("{:?}", ethernet);
+    match EthernetPacket::new(packet.data) {
+        Some(ethernet) => {
+            info!("{:?}", ethernet);
 
-        match ethernet.get_ethertype() {
-            EtherTypes::Arp => process_arp(&ethernet),
-            EtherTypes::Ipv4 => process_ipv4(&ethernet),
-            EtherTypes::Ipv6 => process_ipv6(&ethernet),
-            _ => {}
+            match ethernet.get_ethertype() {
+                EtherTypes::Arp => process_arp(&ethernet),
+                EtherTypes::Ipv4 => process_ipv4(&ethernet),
+                EtherTypes::Ipv6 => process_ipv6(&ethernet),
+                _ => {}
+            }
         }
+        _ => {}
     }
 
     // And finally flush output
