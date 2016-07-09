@@ -38,22 +38,22 @@ pub fn process_payload(payload: &[u8]) {
     };
 }
 
-pub fn process_arp(ethernet: &EthernetPacket) {
-    match ArpPacket::new(ethernet.payload()) {
-        Some(arp) => info!("{:?}", arp),
+pub fn process_arp(packet: &EthernetPacket) {
+    match ArpPacket::new(packet.payload()) {
+        Some(inner) => info!("{:?}", inner),
         _ => {}
     }
 }
 
-pub fn process_ipv4(ethernet: &EthernetPacket) {
-    match Ipv4Packet::new(ethernet.payload()) {
-        Some(ip) => {
-            info!("{:?}", ip);
+pub fn process_ipv4(packet: &EthernetPacket) {
+    match Ipv4Packet::new(packet.payload()) {
+        Some(inner) => {
+            info!("{:?}", inner);
 
-            match ip.get_next_level_protocol() {
-                IpNextHeaderProtocols::Icmp => process_icmp(&ip),
-                IpNextHeaderProtocols::Tcp => process_tcp(&ip),
-                IpNextHeaderProtocols::Udp => process_udp(&ip),
+            match inner.get_next_level_protocol() {
+                IpNextHeaderProtocols::Icmp => process_icmp(&inner),
+                IpNextHeaderProtocols::Tcp => process_tcp(&inner),
+                IpNextHeaderProtocols::Udp => process_udp(&inner),
                 _ => {}
             }
         }
@@ -61,40 +61,40 @@ pub fn process_ipv4(ethernet: &EthernetPacket) {
     }
 }
 
-pub fn process_ipv6(ethernet: &EthernetPacket) {
-    match Ipv6Packet::new(ethernet.payload()) {
-        Some(ip) => {
-            info!("{:?}", ip);
+pub fn process_ipv6(packet: &EthernetPacket) {
+    match Ipv6Packet::new(packet.payload()) {
+        Some(inner) => {
+            info!("{:?}", inner);
         }
         _ => {}
     }
 }
 
-pub fn process_icmp(ip: &Ipv4Packet) {
-    match IcmpPacket::new(ip.payload()) {
-        Some(icmp) => {
-            info!("{:?}", icmp);
-            process_payload(&icmp.payload());
+pub fn process_icmp(packet: &Ipv4Packet) {
+    match IcmpPacket::new(packet.payload()) {
+        Some(inner) => {
+            info!("{:?}", inner);
+            process_payload(&inner.payload());
         }
         _ => {}
     }
 }
 
-pub fn process_tcp(ip: &Ipv4Packet) {
-    match TcpPacket::new(ip.payload()) {
-        Some(tcp) => {
-            info!("{:?}", tcp);
-            process_payload(&tcp.payload());
+pub fn process_tcp(packet: &Ipv4Packet) {
+    match TcpPacket::new(packet.payload()) {
+        Some(inner) => {
+            info!("{:?}", inner);
+            process_payload(&inner.payload());
         }
         _ => {}
     }
 }
 
-pub fn process_udp(ip: &Ipv4Packet) {
-    match UdpPacket::new(ip.payload()) {
-        Some(udp) => {
-            info!("{:?}", udp);
-            process_payload(&udp.payload());
+pub fn process_udp(packet: &Ipv4Packet) {
+    match UdpPacket::new(packet.payload()) {
+        Some(inner) => {
+            info!("{:?}", inner);
+            process_payload(&inner.payload());
         }
         _ => {}
     }
@@ -104,13 +104,13 @@ pub fn process(packet: &pcap::Packet) {
     info!("{:?}", packet);
 
     match EthernetPacket::new(packet.data) {
-        Some(ethernet) => {
-            info!("{:?}", ethernet);
+        Some(inner) => {
+            info!("{:?}", inner);
 
-            match ethernet.get_ethertype() {
-                EtherTypes::Arp => process_arp(&ethernet),
-                EtherTypes::Ipv4 => process_ipv4(&ethernet),
-                EtherTypes::Ipv6 => process_ipv6(&ethernet),
+            match inner.get_ethertype() {
+                EtherTypes::Arp => process_arp(&inner),
+                EtherTypes::Ipv4 => process_ipv4(&inner),
+                EtherTypes::Ipv6 => process_ipv6(&inner),
                 _ => {}
             }
         }
