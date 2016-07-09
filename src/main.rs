@@ -28,14 +28,6 @@ fn main() {
         exit(0);
     });
 
-    // thread::spawn(move || {
-    //     // some work here
-    //     loop {
-    //         print!(".");
-    //         thread::sleep(Duration::from_millis(1000))
-    //     }
-    // });
-
     // Specify program options
     let matches = App::new(DESCRIPTION)
         .version(VERSION)
@@ -49,6 +41,10 @@ fn main() {
             .help("List interfaces")
             .short("l")
             .long("list"))
+        .arg(Arg::with_name("o")
+            .help("Output file to log to")
+            .short("o")
+            .long("output"))
         .arg(Arg::with_name("promisc")
             .help("Capture packets in promiscuous mode")
             .short("p")
@@ -75,5 +71,5 @@ fn main() {
         println!("Capturing packets in promiscuous mode");
     }
 
-    charon::sniff(promisc, snaplen.unwrap().parse::<i32>().unwrap());
+    charon::sniff(promisc, snaplen.unwrap().parse::<i32>().unwrap(), None);
 }
