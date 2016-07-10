@@ -60,7 +60,7 @@ fn main() {
     env_logger::init().unwrap();
 
     if matches.is_present("list") {
-        charon::list_devices();
+        charon::helpers::list_devices();
         return;
     }
 
