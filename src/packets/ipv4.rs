@@ -7,15 +7,15 @@ use super::icmp;
 use super::tcp;
 use super::udp;
 
-pub fn process_ipv4(packet: &EthernetPacket) {
+pub fn process(packet: &EthernetPacket) {
     match Ipv4Packet::new(packet.payload()) {
         Some(inner) => {
             info!("{:?}", inner);
 
             match inner.get_next_level_protocol() {
-                IpNextHeaderProtocols::Icmp => icmp::process_icmp(&inner),
-                IpNextHeaderProtocols::Tcp => tcp::process_tcp(&inner),
-                IpNextHeaderProtocols::Udp => udp::process_udp(&inner),
+                IpNextHeaderProtocols::Icmp => icmp::process(&inner),
+                IpNextHeaderProtocols::Tcp => tcp::process(&inner),
+                IpNextHeaderProtocols::Udp => udp::process(&inner),
                 _ => {}
             }
         }

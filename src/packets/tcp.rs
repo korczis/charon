@@ -4,7 +4,7 @@ use pnet::packet::Packet;
 
 use super::super::helpers::print_payload;
 
-pub fn process_tcp(packet: &Ipv4Packet) {
+pub fn process(packet: &Ipv4Packet) {
     match TcpPacket::new(packet.payload()) {
         Some(inner) => {
             info!("{:?}", inner);

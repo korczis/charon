@@ -36,9 +36,9 @@ pub fn process(packet: &pcap::Packet) {
             info!("{:?}", inner);
 
             match inner.get_ethertype() {
-                EtherTypes::Arp => packets::arp::process_arp(&inner),
-                EtherTypes::Ipv4 => packets::ipv4::process_ipv4(&inner),
-                EtherTypes::Ipv6 => packets::ipv6::process_ipv6(&inner),
+                EtherTypes::Arp => packets::arp::process(&inner),
+                EtherTypes::Ipv4 => packets::ipv4::process(&inner),
+                EtherTypes::Ipv6 => packets::ipv6::process(&inner),
                 _ => {}
             }
         }

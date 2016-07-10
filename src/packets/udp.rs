@@ -4,7 +4,7 @@ use pnet::packet::Packet;
 
 use super::super::helpers::print_payload;
 
-pub fn process_udp(packet: &Ipv4Packet) {
+pub fn process(packet: &Ipv4Packet) {
     match UdpPacket::new(packet.payload()) {
         Some(inner) => {
             info!("{:?}", inner);
